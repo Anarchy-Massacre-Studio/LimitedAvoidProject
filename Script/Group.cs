@@ -4,6 +4,10 @@
     using System.Collections;
     using System.Collections.Generic;
     using UnityEngine;
+
+    public delegate void BackAction<T>(T transform);
+    public delegate void BackAction<T,T1>(T transform, ref T1 time);
+
     /// <summary>
     /// 组，组中内容只有被拿取时会被激活，使用完毕后会被隐藏，T必须是继承Transfom的类型。
     /// </summary>
@@ -54,7 +58,7 @@
         {
             group.Add(item);
             item.gameObject.SetActive(false);
-            item.gameObject.AddComponent<BackInfo>();
+            if (backActionT != null || backActionTF != null) item.gameObject.AddComponent<BackInfo>();
             if (backActionT != null) item.GetComponent<BackInfo>().SetAction(backActionT);
             if (backActionTF != null) item.GetComponent<BackInfo>().SetAction(backActionTF);
         }

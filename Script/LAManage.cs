@@ -8,7 +8,9 @@ using System;
   启动脚本。
      */
 
-public class LAManage : MonoBehaviour {
+public class LAManage : MonoBehaviour
+{
+    public ResourcesManager ResourcesManager;
 
 	void Start () {
         Init();
@@ -30,31 +32,36 @@ public class LAManage : MonoBehaviour {
     {
         LAClient.g_Ins.InitInfo(Canvas);
         m_pUpdate = LAClient.g_Ins.m_pUpdate;
+        MapData.isStart = false;  //触发MapData类的静态构造函数。
 
     }
 
     private void Update()
     {
-        if (ResourcesManager.isLoadFinish)
+        if (MapData.isStart == true)
         {
-            m_pLAClient.ShowLoading(false);
-        }
+            ResourcesManager.enabled = true;
 
-        if (m_pUpdate != null)
-        {
-            m_pUpdate();
-        }
-    
+            if (ResourcesManager.isLoadFinish)
+            {
+                m_pLAClient.ShowLoading(false);
+            }
 
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            LAClient.g_Ins.UpdataMapData();
-        }
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-          
-        }
+            if (m_pUpdate != null)
+            {
+                m_pUpdate();
+            }
 
+
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                LAClient.g_Ins.UpdataMapData();
+            }
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+
+            }
+        }
     }
 
     #region 成员变量

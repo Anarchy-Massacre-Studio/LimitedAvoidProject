@@ -14,8 +14,11 @@ public class GameRunTime : MonoBehaviour
     /// </summary>
     public static int Score { get; private set; }
 
-    GameObject ground;
-    GameObject birthPoint;
+
+    /// <summary>
+    /// 敌人出生地坐标列表。
+    /// </summary>
+    private List<Vector2> birthPoints = new List<Vector2>();
 
     /// <summary>
     /// 设置当前地图。
@@ -25,15 +28,12 @@ public class GameRunTime : MonoBehaviour
     {
         _map = map;
     }
-
+    
     private void OnEnable()
     {
         if (ResourcesManager.isLoadFinish)
         {
-            Debug.Log(ResourcesManager.isLoadFinish);
-            ground = Res.Ground;
-            birthPoint = Res.BirthPoint;
-            _map = new Map(3, MapInfo.MapLevel.Easy, 1, null, false);
+            _map = MapData.Maps[0];
             if (_map != null)
             {
                 for (int i = 0; i < _map.GetMap().GetLength(1); i++)
@@ -46,17 +46,19 @@ public class GameRunTime : MonoBehaviour
                             case 0:
                                 break;
                             case 1:
-                                Instantiate(ground, new Vector3(i + 1, j + 1, 0), ground.transform.rotation, gameObject.transform);
+                                Res.Grounds.Take().position = new Vector3(i + 1, j + 1, 0);
                                 break;
                             case 2:
-                                Instantiate(birthPoint, new Vector3(i + 1, j + 1, 0), birthPoint.transform.rotation, gameObject.transform);
+                                Transform t = Res.BirthPoints.Take();
+                                t.position = new Vector3(i + 1, j + 1, 0);
+                                birthPoints.Add(t.localPosition);
                                 break;
                         }
                     }
                 }
             }
 
-            Res.Enemys.Take();
+            
 
             int x_c = _map.GetMap().GetLength(1) / 2; //获得地图中心位置坐标x。
             int y_c = _map.GetMap().GetLength(0) / 2; //获得地图中心位置坐标y。
@@ -74,7 +76,12 @@ public class GameRunTime : MonoBehaviour
 
     private void OnDisable()
     {
+        transform.position = new Vector3(0, 0);
         transform.localScale = Vector3.one;
+        birthPoints.Clear();
+        Res.Grounds.BackAll();
+        Res.BirthPoints.BackAll();
+        Res.Enemys.BackAll();
     }
 
     private void Awake()
@@ -83,11 +90,35 @@ public class GameRunTime : MonoBehaviour
 
     }
 
+    float time = 0;
     private void Update()
     {
         if (_map != null && gameObject.activeSelf)
         {
-
+            time += Time.deltaTime;
+            if(time >= 5f)
+            {
+                time -= time;
+                genEnemys();
+            }
         }
+    }
+
+
+    /// <summary>
+    /// 生成敌人。
+    /// </summary>
+    private void genEnemys()
+    {
+        for(int i = 0; i < birthPoints.Count; i++)
+        {
+            var e = Res.Enemys.Take();
+            e.localPosition = birthPoints[i];
+            e.GetComponent<Enemy>().SetAttackDirection(_map.GetDirection()[i]);
+        }
+        //foreach(var b in birthPoints)
+        //{
+        //    Res.Enemys.Take().localPosition = b;
+        //}
     }
 }

@@ -1,7 +1,5 @@
-﻿using UnityEngine;
-
-public delegate void BackAction<T>(T transform);
-public delegate void BackAction<T,T1>(T transform, ref T1 time);
+﻿using SyzygyStudio;
+using UnityEngine;
 
 public class BackInfo : MonoBehaviour
 {

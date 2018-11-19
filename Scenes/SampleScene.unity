@@ -2901,6 +2901,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8200195e01680b448a75d573ddb964fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ResourcesManager: {fileID: 383848637}
   Canvas: {fileID: 1607140979}
 --- !u!114 &383848637
 MonoBehaviour:
@@ -2913,6 +2914,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db42a8aa0d241754c8ab745b6f69b065, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Map: {fileID: 828979827}
 --- !u!1 &407698100
 GameObject:
   m_ObjectHideFlags: 0

@@ -8,7 +8,7 @@
 
     public class MapReader
     {
-        enum Mark { count,name,size,map,def};
+        enum Mark { count,name,size,map,direction,def};
 
         /// <summary>
         /// 地图数量。
@@ -30,12 +30,24 @@
         /// </summary>
         List<int[,]> maps = null;
 
+        /// <summary>
+        /// 敌人出生点方向。
+        /// </summary>
+        List<Vector2[]> directions = null;
+
+        int[] birthPointCount;
+        int[] groundCount;
+
+        public static int birthPointCountMax { get; private set; }
+        public static int groundCountMax { get; private set; }
+
         Mark mark = Mark.def;
 
 
         public MapReader(string path)
         {
             if (maps == null) maps = new List<int[,]>();
+            if(directions == null) directions = new List<Vector2[]>();
             try
             {
                 StreamReader streamReader = new StreamReader(path);
@@ -44,7 +56,8 @@
                 string all = streamReader.ReadToEnd();
                 string[] s = all.Split('{', '}');
 
-                int i = 0;
+                int i = 0; //数组标号。
+
                 foreach (var ss in s)
                 {
                     string s_not_space = ss.Trim();
@@ -66,6 +79,10 @@
                             mark = Mark.map;
                             break;
 
+                        case "Direction":
+                            mark = Mark.direction;
+                            break;
+
                         case "": break;
 
                         default:
@@ -75,8 +92,10 @@
                                     count = Convert.ToInt32(s_not_space);
                                     name = new string[count];
                                     size = new Vector2Int[count];
+                                    birthPointCount = new int[count];
+                                    groundCount = new int[count];
                                     break;
-
+   
                                 case Mark.name:
                                     name[i] = s_not_space;
                                     break;
@@ -87,8 +106,7 @@
                                     break;
 
                                 case Mark.map:
-                                    string num = s_not_space.Replace('(', ' ').Replace(')', ' ').Trim();
-                                    string[] just_num = num.Split(',');
+                                    string[] just_num = s_not_space.Replace('(', ' ').Replace(')', ' ').Trim().Split(',');
                                     int[] just_num_int = new int[just_num.Length];
                                     int c = 0;
                                     foreach (var j in just_num)
@@ -96,19 +114,77 @@
                                         just_num_int[c] = Convert.ToInt32(j);
                                         c++;
                                     }
-                                    int map_x = size[i].x;
-                                    int map_y = size[i].y;
+                                    foreach(var j in just_num_int)
+                                    {
+                                        switch(j)
+                                        {
+                                            case 0: break;
 
-                                    int[,] temp_map = new int[map_x, map_y];
+                                            case 1:
+                                                groundCount[i]++;
+                                                break;
+
+                                            case 2:
+                                                birthPointCount[i]++;
+                                                break;
+                                        }
+                                    }
+
+                                    int[,] temp_map = new int[size[i].x, size[i].y];
                                     
                                     for(int j = 0; j < just_num_int.Length; j++)
                                     {
-                                        temp_map[j / map_y, j % map_y] = just_num_int[j];
+                                        temp_map[j / size[i].y, j % size[i].y] = just_num_int[j];
                                     }
+
+                                    int[,] temp_map_flip = temp_map;
+                                    /*
+                                    for (int k = 0; k < temp_map.GetLength(0); k++)
+                                    {
+                                        for (int l = 0; l < temp_map.GetLength(1); l++)
+                                        {
+                                            temp_map_flip[k, l] = temp_map[temp_map.GetLength(0) - k - 1, l];
+                                        }
+                                    }
+                                    */
+                                    /*
+                                    List<int[]> vs = new List<int[]>(temp_map.GetLength(0));
+
+                                    for (int j = 0; j < just_num_int.Length; j++)
+                                    {
+                                        vs[j / map_y][j % map_y] = just_num_int[j];
+                                        //temp_map[j / map_y, j % map_y] = just_num_int[j];
+                                    }
+                                    */
+                                    maps.Add(temp_map_flip);
+                                    break;
+
+                                case Mark.direction:
+                                    string[] just_num_2 = s_not_space.Replace('(', ' ').Replace(')', ' ').Trim().Split(',');
+                                    if(just_num_2.Length % 2 != 0) throw new Exception("Map Direction read errors!");
                                     
+                                    Vector2 temp_v2 = new Vector2();
+                                    Vector2[] temp_v2s = new Vector2[just_num_2.Length/2];
+                                    bool isFull = false;
+                                    int index = 0;
+                                    foreach(var f in just_num_2)
+                                    {
+                                        if(!isFull)
+                                        {
+                                             temp_v2.x = Convert.ToSingle(f);
+                                             isFull = true;
+                                        }
+                                        else 
+                                        {
+                                            temp_v2.y = Convert.ToSingle(f);
+                                            temp_v2s[index] = temp_v2;
+                                            index++;
+                                            isFull = false;
+                                        }
+                                    }
 
+                                    directions.Add(temp_v2s);
 
-                                    maps.Add(temp_map);
                                     i++;
                                     break;
 
@@ -128,6 +204,17 @@
                 Debug.LogException(ex);
                 Application.Quit();
             }
+            finally
+            {
+                foreach(var v in groundCount)
+                {
+                    if (v > groundCountMax) groundCountMax = v;
+                }
+                foreach(var v in birthPointCount)
+                {
+                    if (v > birthPointCountMax) birthPointCountMax = v;
+                }
+            }
         }
 
         /// <summary>
@@ -138,6 +225,16 @@
         public int[,] GetMap(int id)
         {
             return maps[id - 1];
+        }
+
+        /// <summary>
+        /// 根据id得到指定地图的敌人攻击方向。
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public Vector2[] GetDirection(int id)
+        {
+            return directions[id - 1];
         }
 
         /// <summary>

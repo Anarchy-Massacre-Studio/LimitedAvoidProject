@@ -42,7 +42,7 @@ public class Enemy : MonoBehaviour
     private void Update()
     {
         if (canKILL()) KILL();
-        transform.Translate(AttackDirection.RightUp * speed * Time.deltaTime);
+        transform.Translate(attackDirection * speed * Time.deltaTime);
     }
 
     bool canKILL()
