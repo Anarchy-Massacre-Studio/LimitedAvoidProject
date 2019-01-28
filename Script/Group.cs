@@ -168,7 +168,6 @@
             {
                 g.position = pos;
             }
-
         }
 
         /// <summary>

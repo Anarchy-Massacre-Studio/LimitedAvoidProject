@@ -44,9 +44,9 @@
             public const float H2E = 120f;
         }
 
-        public static MapReader OpenMap(string path)
+        public static MapReader OpenMap(byte[] content)
         {
-            return new MapReader(path);
+            return new MapReader(content);
         }
 
     }

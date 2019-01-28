@@ -33,7 +33,7 @@ public class GameRunTime : MonoBehaviour
     {
         if (ResourcesManager.isLoadFinish)
         {
-            _map = MapData.Maps[0];
+            _map = MapData.Maps[1];
             if (_map != null)
             {
                 for (int i = 0; i < _map.GetMap().GetLength(1); i++)

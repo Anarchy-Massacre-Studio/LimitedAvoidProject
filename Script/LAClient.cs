@@ -56,16 +56,14 @@ namespace LA.UI
             m_pUILoadingView.OnClickLeftAndRightMapLevel = RoomShowOnClickLeftAndRightMapLevel;
             m_pUILoadingView.OnClickPlayGame = RoomShowOnClickPlayGame;
             m_pUILoadingView.OnClickRoomAction = RoomShowOnClickRoomItem;
+            m_pUILoadingView.OnClickEditerMenuItemAction = EditerShowOnClickEditerMenuItem;
+            m_pUILoadingView.OnClickEditerRoomItemAction = EditerShowOnClickRoom;
 
             // 设置数据。
             int Type = GetPhoneLangueMode();
-            SetLangueMode(Type);
-            LAClient.g_Ins.FillMapData();
-
-
-            // 更新数据。
-            LAClient.g_Ins.UpdataMapData();
-
+            SetLangueMode(PlayerPrefs.GetInt("language", Type));
+            
+            //SetShowOnClickAudio(Convert.ToBoolean(PlayerPrefs.GetInt("audio", 1)));
         }
 
         /// <summary>
@@ -99,6 +97,13 @@ namespace LA.UI
             switch (nIndex)
             {
                 case 1:
+                    LAClient.g_Ins.FillMapData();
+                    LAClient.g_Ins.UpdataMapData();
+                    Debug.LogError("点击开始");
+                    ShowActiveView(nIndex);
+                    break;
+                case 5:
+                    LAClient.g_Ins.EditerShowUpdataInfo();
                     ShowActiveView(nIndex);
                     break;
                 case 2:
@@ -169,7 +174,7 @@ namespace LA.UI
         public void SetShowOnClickAudio(bool b)
         {
             Debug.LogError("单击声音。=>" + b);
-
+            //PlayerPrefs.SetInt("audio", Convert.ToInt32(!b));
         }
 
         #endregion
@@ -214,9 +219,80 @@ namespace LA.UI
             m_pUILoadingView.UpdataCheckRoomInfo(pRoom);
         }
 
-        #endregion
+        #endregion 房间面板。(RoomShow) End
 
-        #endregion
+        #region 编辑面板。(EditerShow)
+
+        /// <summary>
+        ///  房间假数据。
+        /// </summary>
+        public class EditerRoomItem
+        {
+            public string name;
+            public Texture2D Image;
+        }
+
+        /// <summary>
+        /// 更新编辑界面信息。
+        /// </summary>
+        public void EditerShowUpdataInfo()
+        {
+            List<EditerRoomItem> editerRoomItemLists = new List<EditerRoomItem>();
+            EditerRoomItem item1 = new EditerRoomItem();
+            item1.name = "新手营";
+            item1.Image = Texture2D.blackTexture;
+            EditerRoomItem item2 = new EditerRoomItem();
+            item2.name = "这结构好恶心";
+            item2.Image = Texture2D.whiteTexture;
+            EditerRoomItem item3 = new EditerRoomItem();
+            item3.name = "噩梦连连";
+            item3.Image = Texture2D.blackTexture;
+            editerRoomItemLists.Add(item1);
+            editerRoomItemLists.Add(item2);
+            editerRoomItemLists.Add(item3);
+
+            // 刷新房间列表信息
+            m_pUILoadingView.UpdataEditerRoomListInfo(editerRoomItemLists);
+
+
+        }
+
+        /// <summary>
+        /// 单击房间。
+        /// </summary>
+        public void EditerShowOnClickRoom(EditerRoomItem pItem)
+        {
+            Debug.LogError("最强单击=>" + pItem.name);
+        }
+
+        /// <summary>
+        /// 打开 创建 修改 删除大礼包。
+        /// </summary>
+        public void EditerShowOnClickEditerMenuItem(int nIndex)
+        {
+            switch (nIndex)
+            {
+                case 1:
+                    Debug.LogError("打开。");
+
+                    break;
+                case 2:
+                    Debug.LogError("新建。");
+                    break;
+                case 3:
+                    Debug.LogError("修改。");
+                    break;
+                case 4:
+                    Debug.LogError("删除。");
+                    break;
+            }
+
+        }
+
+
+        #endregion 编辑面板。(EditerShow) End
+
+        #endregion 菜单视图。(LoadingView) End
 
         #region 多语言。
         /// <summary>
@@ -266,6 +342,7 @@ namespace LA.UI
             if (index != 0)
             {
                 m_nCurLangueIndex = index;
+                PlayerPrefs.SetInt("language", index);
             }
         }
         #endregion
@@ -377,6 +454,7 @@ namespace LA.UI
         #endregion
 
         #region 成员变量
+
         private UILoadingView m_pUILoadingView;
 
         /// <summary>
@@ -476,6 +554,12 @@ namespace LA.UI
             m_lLangueInfo.Add(new LangueInfo("LoadingView_UI", LangueMode.CN, "界面:lv1"));
             m_lLangueInfo.Add(new LangueInfo("LoadingView_Planner", LangueMode.CN, "策划:mckay"));
             m_lLangueInfo.Add(new LangueInfo("LoadingView_Artist", LangueMode.CN, "美术:Kevin Y. Wong "));
+            m_lLangueInfo.Add(new LangueInfo("LoadingView_Editer", LangueMode.CN, "编辑"));
+            m_lLangueInfo.Add(new LangueInfo("LoadingView_EditerRoom", LangueMode.CN, "编辑房间"));
+            m_lLangueInfo.Add(new LangueInfo("LoadingView_Open", LangueMode.CN, "打开"));
+            m_lLangueInfo.Add(new LangueInfo("LoadingView_Create", LangueMode.CN, "新建"));
+            m_lLangueInfo.Add(new LangueInfo("LoadingView_Editer", LangueMode.CN, "修改"));
+            m_lLangueInfo.Add(new LangueInfo("LoadingView_Delete", LangueMode.CN, "删除"));
             // 英文
             m_lLangueInfo.Add(new LangueInfo("LoadingView_Start", LangueMode.EN, "Start"));
             m_lLangueInfo.Add(new LangueInfo("LoadingView_Set", LangueMode.EN, "Set"));
@@ -507,7 +591,12 @@ namespace LA.UI
             m_lLangueInfo.Add(new LangueInfo("LoadingView_UI", LangueMode.EN, "UI:lv1"));
             m_lLangueInfo.Add(new LangueInfo("LoadingView_Planner", LangueMode.EN, "Planner:mckay"));
             m_lLangueInfo.Add(new LangueInfo("LoadingView_Artist", LangueMode.EN, "Artist:Kevin Y. Wong "));
-
+            m_lLangueInfo.Add(new LangueInfo("LoadingView_Editer", LangueMode.EN, "Editer"));
+            m_lLangueInfo.Add(new LangueInfo("LoadingView_EditerRoom", LangueMode.EN, "EditerRoom"));
+            m_lLangueInfo.Add(new LangueInfo("LoadingView_Open", LangueMode.EN, "Open"));
+            m_lLangueInfo.Add(new LangueInfo("LoadingView_Create", LangueMode.EN, "Create"));
+            m_lLangueInfo.Add(new LangueInfo("LoadingView_Editer", LangueMode.EN, "Editer"));
+            m_lLangueInfo.Add(new LangueInfo("LoadingView_Delete", LangueMode.EN, "Delete"));
         }
 
         /// <summary>
@@ -1043,6 +1132,22 @@ namespace LA.UI
                 Text[i] = str.Trim().Substring(str.Length - size, 1);
             }
             return Text;
+        }
+
+
+        /// <summary>
+        /// 返回指定组件下的全部T组件。
+        /// </summary>
+        /// <param name="transform">指定组件。</param>
+        /// <param name="tList">需要返回的List类（不能为null）</param>
+        /// <typeparam name="T">需要返回的T类型。</typeparam>
+        public static void FindCom<T>(Transform transform, ref List<T> tList) where T : MonoBehaviour
+        {
+            foreach (Transform t in transform)
+            {
+                if (t.GetComponent<T>()) tList.Add(t.GetComponent<T>());
+                else if(t.childCount != 0) FindCom<T>(t, ref tList);
+            }
         }
 
     }

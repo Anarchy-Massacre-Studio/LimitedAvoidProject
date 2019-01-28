@@ -44,13 +44,17 @@
         Mark mark = Mark.def;
 
 
-        public MapReader(string path)
+        public MapReader(byte[] content)
         {
+            Debug.LogError("加载地图。");
+            //Res.Debug_Text.text += "加载地图！";
             if (maps == null) maps = new List<int[,]>();
-            if(directions == null) directions = new List<Vector2[]>();
+            if (directions == null) directions = new List<Vector2[]>();
             try
             {
-                StreamReader streamReader = new StreamReader(path);
+                //Res.Debug_Text.text += "try!";
+                MemoryStream memoryStream = new MemoryStream(content);
+                StreamReader streamReader = new StreamReader(memoryStream);
                 if (streamReader.ReadLine() != "MapData") throw new DirectoryNotFoundException();
 
                 string all = streamReader.ReadToEnd();
@@ -95,7 +99,7 @@
                                     birthPointCount = new int[count];
                                     groundCount = new int[count];
                                     break;
-   
+
                                 case Mark.name:
                                     name[i] = s_not_space;
                                     break;
@@ -114,9 +118,9 @@
                                         just_num_int[c] = Convert.ToInt32(j);
                                         c++;
                                     }
-                                    foreach(var j in just_num_int)
+                                    foreach (var j in just_num_int)
                                     {
-                                        switch(j)
+                                        switch (j)
                                         {
                                             case 0: break;
 
@@ -131,8 +135,8 @@
                                     }
 
                                     int[,] temp_map = new int[size[i].x, size[i].y];
-                                    
-                                    for(int j = 0; j < just_num_int.Length; j++)
+
+                                    for (int j = 0; j < just_num_int.Length; j++)
                                     {
                                         temp_map[j / size[i].y, j % size[i].y] = just_num_int[j];
                                     }
@@ -161,20 +165,20 @@
 
                                 case Mark.direction:
                                     string[] just_num_2 = s_not_space.Replace('(', ' ').Replace(')', ' ').Trim().Split(',');
-                                    if(just_num_2.Length % 2 != 0) throw new Exception("Map Direction read errors!");
-                                    
+                                    if (just_num_2.Length % 2 != 0) throw new Exception("Map Direction read errors!");
+
                                     Vector2 temp_v2 = new Vector2();
-                                    Vector2[] temp_v2s = new Vector2[just_num_2.Length/2];
+                                    Vector2[] temp_v2s = new Vector2[just_num_2.Length / 2];
                                     bool isFull = false;
                                     int index = 0;
-                                    foreach(var f in just_num_2)
+                                    foreach (var f in just_num_2)
                                     {
-                                        if(!isFull)
+                                        if (!isFull)
                                         {
-                                             temp_v2.x = Convert.ToSingle(f);
-                                             isFull = true;
+                                            temp_v2.x = Convert.ToSingle(f);
+                                            isFull = true;
                                         }
-                                        else 
+                                        else
                                         {
                                             temp_v2.y = Convert.ToSingle(f);
                                             temp_v2s[index] = temp_v2;
@@ -190,31 +194,41 @@
 
                                 case Mark.def: break;
                             }
-                            break;
+                            break;            
                     }
                 }
+                streamReader.Close();
+                streamReader.Dispose();
+                memoryStream.Close();
+                memoryStream.Dispose();
+                //Res.Debug_Text.text += "加载完成！";
             }
-            catch (DirectoryNotFoundException)
+            catch (DirectoryNotFoundException dnfe)
             {
                 Debug.LogError("MapNotExist");
+                //Res.Debug_Text.text += dnfe.Message;
                 Application.Quit();
             }
             catch (Exception ex)
             {
                 Debug.LogException(ex);
+                //Res.Debug_Text.text += ex.Message;
                 Application.Quit();
             }
             finally
             {
-                foreach(var v in groundCount)
+                foreach (var v in groundCount)
                 {
                     if (v > groundCountMax) groundCountMax = v;
                 }
-                foreach(var v in birthPointCount)
+                foreach (var v in birthPointCount)
                 {
                     if (v > birthPointCountMax) birthPointCountMax = v;
                 }
+                //Res.Debug_Text.text += "完毕！";
             }
+                
+           
         }
 
         /// <summary>

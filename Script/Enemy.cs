@@ -18,6 +18,7 @@ public struct AttackDirection
 public class Enemy : MonoBehaviour
 {
     Transform player;
+    ParticleSystem particleSystem;
 
     [SerializeField]
     Vector2 attackDirection;
@@ -37,6 +38,9 @@ public class Enemy : MonoBehaviour
     private void Awake()
     {
         player = Res.Player.transform;
+        particleSystem = GetComponent<ParticleSystem>();
+        var main = particleSystem.main;
+        main.startColor = GetComponent<SpriteRenderer>().color;
     }
 
     private void Update()

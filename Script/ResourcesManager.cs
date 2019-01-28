@@ -1,12 +1,21 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
+using UnityEngine.UI;
 using SyzygyStudio;
+using System.IO;
 
 public class ResourcesManager : MonoBehaviour
 {
     public Transform Map;
+    public Text View_Loading;
+    public RectTransform SwitchShow;
     public static bool isLoadFinish = false;
+
+    private TextAsset MapTextAsset;
+
+    //public Text Debug_Text;
 
     private void Awake()
     {
@@ -16,7 +25,28 @@ public class ResourcesManager : MonoBehaviour
 
     IEnumerator load()
     {
+        ///*
+        yield return MapTextAsset = Resources.Load<TextAsset>("Map");
+        //Res.Debug_Text = Debug_Text;
+        Res.MapText = MapTextAsset.bytes;
+
+        /*
+        foreach (var b in MapTextAsset.bytes)
+        {
+            Debug_Text.text += b;
+        }
+        MemoryStream memoryStream = new MemoryStream(MapTextAsset.bytes);
+        StreamReader streamReader = new StreamReader(memoryStream);
+        Debug_Text.text += streamReader.ReadToEnd();
+        */
         MapData.isStart = true;  //触发MapData类的静态构造函数。
+        /*
+        streamReader.Close();
+        streamReader.Dispose();
+        memoryStream.Close();
+        memoryStream.Dispose();
+        */
+
 
         #region 得到素材。
         yield return Res.Ground = Resources.Load<GameObject>("Ground");
@@ -25,7 +55,7 @@ public class ResourcesManager : MonoBehaviour
         yield return Res.Enemy = Resources.Load<GameObject>("Enemy");
         yield return Res.Die = Resources.Load<GameObject>("Die");
         #endregion
-
+        ///* 
         #region 生成素材。
         yield return Instantiate(Res.Player);
         #endregion
@@ -91,8 +121,12 @@ public class ResourcesManager : MonoBehaviour
         #endregion
 
         #endregion
+        //*/
+        //yield return new WaitForSecondsRealtime(1f);
 
         isLoadFinish = true;
+
+        View_Loading.DOFade(0f,1f).OnComplete(() => SwitchShow.DOLocalMoveX(0,0.5f));
     }
 }
 
@@ -110,4 +144,8 @@ public static class Res
     public static Group<Transform> BirthPoints = null;
 
     public static List<GameObject> Maps = null;
+
+    public static byte[] MapText;
+
+    //public static Text Debug_Text;
 }

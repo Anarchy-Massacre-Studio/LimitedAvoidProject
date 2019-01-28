@@ -30,6 +30,7 @@ namespace LA.UI
             m_pSetShow = new SetShow(m_pContent.transform.Find("SetShow").gameObject);
             m_pRoomShow = new RoomShow(m_pContent.transform.Find("RoomShow").gameObject);
             m_pAboutShow = new AboutShow(m_pContent.transform.Find("AboutShow").gameObject);
+            m_pEditerShow = new EditerShow(m_pContent.transform.Find("EditerShow").gameObject);
 
             m_pSwitchShow.OnClickSwitchShowItem = OnClickSwitch;
             m_pSetShow.OnClickReturnBtnAction = OnClickReturn;
@@ -40,7 +41,9 @@ namespace LA.UI
             m_pRoomShow.OnClickReturnBtnAction = OnClickReturn;
             m_pAboutShow.OnClickReturnBtnAction = OnClickReturn;
             m_pRoomShow.OnClickRoomAction = OnClickRoomItem;
-
+            m_pEditerShow.OnClickReturnBtnAction = OnClickReturn;
+            m_pEditerShow.OnClickMenuBtnAction = OnClickEditerMenuItem;
+            m_pEditerShow.OnClickEditerRoomBtnAction = OnClickEditerRoomItem;
             // 注册UI
             LAClient.g_Ins.RegisterUI(UpdateUI);
             LAClient.g_Ins.AddUpdate(Update);
@@ -65,6 +68,7 @@ namespace LA.UI
             m_pSetShow.UpdateUI();
             m_pRoomShow.UpdateUI();
             m_pAboutShow.UpdateUI();
+            m_pEditerShow.UpdateUI();
         }
 
         /// <summary>
@@ -102,6 +106,9 @@ namespace LA.UI
                     break;
                 case 3://从关于 返回 选择面板
                     m_pAboutShow.SetActive(false);
+                    break;
+                case 4://从关于 编辑 选择面板
+                    m_pEditerShow.SetActive(false);
                     break;
             }
         }
@@ -151,6 +158,34 @@ namespace LA.UI
         }
 
         /// <summary>
+        /// 单击编辑房间界面功能菜单项目。
+        /// </summary>
+        /// <param name="nIndex"></param>
+        private void OnClickEditerMenuItem(int nIndex)
+        {
+            OnClickEditerMenuItemAction(nIndex);
+        }
+
+        /// <summary>
+        /// 单击编辑房间界面编辑房间列表项目。
+        /// </summary>
+        /// <param name="nIndex"></param>
+        private void OnClickEditerRoomItem(LAClient.EditerRoomItem pItem)
+        {
+            OnClickEditerRoomItemAction(pItem);
+        }
+
+        
+        /// <summary>
+        /// 单击编辑房间界面编辑房间列表项目。
+        /// </summary>
+        /// <param name="nIndex"></param>
+        private void OnClickEditerRoomItem(int nIndex)
+        {
+            OnClickEditerMenuItemAction(nIndex);
+        }
+
+        /// <summary>
         /// 跟新地图卷轴数据。
         /// </summary>
         /// <param name="pMapData"></param>
@@ -172,6 +207,18 @@ namespace LA.UI
         }
 
         /// <summary>
+        /// 更新编辑房间列表信息。
+        /// </summary>
+        /// <param name="lList"></param>
+        public void UpdataEditerRoomListInfo(List<LAClient.EditerRoomItem> lList)
+        {
+            if (lList == null)
+                return;
+
+            m_pEditerShow.UpdataEditerRoomListInfo(lList);
+        }
+
+        /// <summary>
         /// 激活视图。
         /// </summary>
         public void ShowView(int nIndex)
@@ -181,6 +228,9 @@ namespace LA.UI
             {
                 case 1:// 开始游戏
                     m_pRoomShow.SetActive(true);
+                    break;
+                case 5:// 编辑面板
+                    m_pEditerShow.SetActive(true);
                     break;
                 case 2:// 设置面板
                     m_pSetShow.SetActive(true);
@@ -305,6 +355,11 @@ namespace LA.UI
         private AboutShow m_pAboutShow;
 
         /// <summary>
+        /// 编辑界面。
+        /// </summary>
+        private EditerShow m_pEditerShow;
+
+        /// <summary>
         /// 单击菜单选择面板选项。
         /// </summary>
         public Action<int> OnClickSwitchShow;
@@ -334,6 +389,9 @@ namespace LA.UI
         /// </summary>
         public Action<LAMapData.Room> OnClickRoomAction;
 
+        public Action<int> OnClickEditerMenuItemAction;
+        public Action<LAClient.EditerRoomItem> OnClickEditerRoomItemAction;
+
         /// <summary>
         /// 菜单选择面板。
         /// </summary>
@@ -343,6 +401,7 @@ namespace LA.UI
             {
                 m_pRoot = pObject;
                 m_pStart = m_pRoot.transform.Find("Scroll View1/Viewport/Content/Item/Show/Text").GetComponent<Text>();
+                m_pEditer = m_pRoot.transform.Find("Scroll View5/Viewport/Content/Item/Show/Text").GetComponent<Text>();
                 m_pSet = m_pRoot.transform.Find("Scroll View2/Viewport/Content/Item/Show/Text").GetComponent<Text>();
                 m_pAbout = m_pRoot.transform.Find("Scroll View3/Viewport/Content/Item/Show/Text").GetComponent<Text>();
                 m_pQuit = m_pRoot.transform.Find("Scroll View4/Viewport/Content/Item/Show/Text").GetComponent<Text>();
@@ -352,6 +411,10 @@ namespace LA.UI
                 m_pStart.GetComponent<Button>().onClick.AddListener(delegate ()
                 {
                     OnClickItem(1);
+                });
+                m_pEditer.GetComponent<Button>().onClick.AddListener(delegate ()
+                {
+                    OnClickItem(5);
                 });
                 m_pSet.GetComponent<Button>().onClick.AddListener(delegate ()
                 {
@@ -406,6 +469,7 @@ namespace LA.UI
             public void UpdateUI()
             {
                 m_pStart.text = LAClient.g_Ins.GetValue("LoadingView_Start");
+                m_pEditer.text = LAClient.g_Ins.GetValue("LoadingView_Editer");
                 m_pSet.text = LAClient.g_Ins.GetValue("LoadingView_Set");
                 m_pAbout.text = LAClient.g_Ins.GetValue("LoadingView_About");
                 m_pQuit.text = LAClient.g_Ins.GetValue("LoadingView_Quit");
@@ -420,11 +484,11 @@ namespace LA.UI
             /// <param name="Index"></param>
             private void OnClickItem(int pIndex)
             {
-                if (pIndex == 4)
-                {
-                    OnClickSwitchShowItem(pIndex);
-                    return;
-                }
+                //if (pIndex == 4)
+                //{
+                //    OnClickSwitchShowItem(pIndex);
+                //    return;
+                //}
 
                 OnClickSwitchShowItem(pIndex);
                 SetActive(false);
@@ -442,6 +506,11 @@ namespace LA.UI
             /// 开始文本。
             /// </summary>
             private Text m_pStart;
+
+            /// <summary>
+            /// 编辑文本。
+            /// </summary>
+            private Text m_pEditer;
 
             /// <summary>
             /// 设置文本。
@@ -486,6 +555,8 @@ namespace LA.UI
         /// </summary>
         private class SetShow
         {
+            public int Id = 1;
+
             public SetShow(GameObject pObject)
             {
                 m_pRoot = pObject;
@@ -497,23 +568,10 @@ namespace LA.UI
                 m_pAudioNo = m_pRoot.transform.Find("Scroll View3/Viewport/Content/Item/Show/No").GetComponent<Button>();
                 m_pTitle = m_pRoot.transform.Find("Scroll View0/Viewport/Content/Item/Show/Text").GetComponent<Text>();
 
-                m_pReturn.GetComponent<Button>().onClick.AddListener(delegate ()
-                {
-                    OnClickReturnBtn(1);
-                });
-                m_pLangueType.GetComponent<Button>().onClick.AddListener(delegate ()
-                {
-                    OnClickLangueItem(0);
-                });
-                m_pAudioYes.onClick.AddListener(delegate ()
-                {
-                    OnClickAudioOpen(true);
-                });
-                m_pAudioNo.onClick.AddListener(delegate ()
-                {
-                    OnClickAudioOpen(false);
-                });
-
+                m_pReturn.GetComponent<Button>().onClick.AddListener(() => OnClickReturnBtn(Id));
+                m_pLangueType.GetComponent<Button>().onClick.AddListener(() => OnClickLangueItem(0));
+                m_pAudioYes.onClick.AddListener(() => OnClickAudioOpen(true));
+                m_pAudioNo.onClick.AddListener(() => OnClickAudioOpen(false));
 
             }
 
@@ -651,6 +709,8 @@ namespace LA.UI
         /// </summary>
         private class RoomShow
         {
+            public int Id = 2;
+
             public RoomShow(GameObject pObject)
             {
                 m_pRoot = pObject;
@@ -703,7 +763,7 @@ namespace LA.UI
 
                 m_pReturn.GetComponent<Button>().onClick.AddListener(delegate ()
                 {
-                    OnClickReturnBtn(2);
+                    OnClickReturnBtn(Id);
                 });
                 m_pPlay.GetComponent<Button>().onClick.AddListener(OnClickPlay);
                 m_pLAScrollEvent = new LAScrollEvent();
@@ -1329,6 +1389,8 @@ namespace LA.UI
         /// </summary>
         private class AboutShow
         {
+            public int Id = 3;
+
             public AboutShow(GameObject pObject)
             {
                 m_pRoot = pObject;
@@ -1341,7 +1403,7 @@ namespace LA.UI
 
                 m_pReturn.GetComponent<Button>().onClick.AddListener(delegate ()
             {
-                OnClickReturnBtn(3);
+                OnClickReturnBtn(Id);
             });
             }
 
@@ -1426,6 +1488,230 @@ namespace LA.UI
 
             private Tween tween;
         }
+
+        /// <summary>
+        /// 编辑面板。
+        /// </summary>
+        private class EditerShow
+        {
+            public int Id = 4;
+
+            public EditerShow(GameObject pObject)
+            {
+                m_pRoot = pObject;
+                m_pTitle = m_pRoot.transform.Find("Scroll View0/Viewport/Content/Item/Show/Text").GetComponent<Text>();
+                m_pReturn = m_pRoot.transform.Find("Scroll View2/Viewport/Content/Item/Show/Return").GetComponent<Text>();
+                m_pOpen = m_pRoot.transform.Find("Scroll View2/Viewport/Content/Item/Show/Open").GetComponent<Text>();
+                m_pCreate = m_pRoot.transform.Find("Scroll View2/Viewport/Content/Item/Show/Create").GetComponent<Text>();
+                m_pEditer = m_pRoot.transform.Find("Scroll View2/Viewport/Content/Item/Show/Editer").GetComponent<Text>();
+                m_pDelete = m_pRoot.transform.Find("Scroll View2/Viewport/Content/Item/Show/Delete").GetComponent<Text>();
+                m_pMapImg = m_pRoot.transform.Find("Scroll View1/Viewport/Content/Panel2/Scroll View/Viewport/Content/Image").GetComponent<Image>();
+
+                g_pPrefab = m_pRoot.transform.Find("Scroll View1/Viewport/Content/Panel1/Scroll View/Viewport/Content/Item").gameObject;
+                g_pPrefab.SetActive(false);
+
+                m_pReturn.GetComponent<Button>().onClick.AddListener(delegate ()
+                {
+                    OnClickReturnBtn(Id);
+                });
+                m_pOpen.GetComponent<Button>().onClick.AddListener(delegate ()
+                {
+                    OnClickMenuBtn(1);
+                });
+                m_pCreate.GetComponent<Button>().onClick.AddListener(delegate ()
+                {
+                    OnClickMenuBtn(2);
+                });
+                m_pEditer.GetComponent<Button>().onClick.AddListener(delegate ()
+                {
+                    OnClickMenuBtn(3);
+                });
+                m_pDelete.GetComponent<Button>().onClick.AddListener(delegate ()
+                {
+                    OnClickMenuBtn(4);
+                });
+
+            }
+
+            public void SetActive(bool b, bool bAnim = true)
+            {
+                tween.Kill(true);
+                if (!bAnim)
+                {
+                    m_pRoot.SetActive(b);
+                    return;
+                }
+
+                if (b)
+                {
+                    m_pRoot.GetComponent<RectTransform>().DOLocalMoveX(500, 0).OnComplete(delegate ()
+                    {
+                        m_pRoot.SetActive(b);
+                        m_pRoot.GetComponent<RectTransform>().DOLocalMoveX(0, 0.5f);
+
+                    });
+                }
+                else
+                {
+                    tween = m_pRoot.GetComponent<RectTransform>().DOLocalMoveX(500, 0.5f).OnComplete(delegate ()
+                    {
+                        m_pRoot.SetActive(b);
+                    });
+                }
+            }
+
+            public void UpdateUI()
+            {
+                m_pTitle.text = LAClient.g_Ins.GetValue("LoadingView_EditerRoom");
+                m_pReturn.text = LAClient.g_Ins.GetValue("LoadingView_Return");
+                m_pOpen.text = LAClient.g_Ins.GetValue("LoadingView_Open");
+                m_pCreate.text = LAClient.g_Ins.GetValue("LoadingView_Create");
+                m_pEditer.text = LAClient.g_Ins.GetValue("LoadingView_Editer");
+                m_pDelete.text = LAClient.g_Ins.GetValue("LoadingView_Delete");
+
+                //m_pOpen.transform.Find("Text").GetComponent<Text>().text = LAClient.g_Ins.GetValue("LoadingView_Open");
+                //m_pCreate.transform.Find("Text").GetComponent<Text>().text = LAClient.g_Ins.GetValue("LoadingView_Create");
+                //m_pEditer.transform.Find("Text").GetComponent<Text>().text = LAClient.g_Ins.GetValue("LoadingView_Editer");
+                //m_pDelete.transform.Find("Text").GetComponent<Text>().text = LAClient.g_Ins.GetValue("LoadingView_Delete");
+
+            }
+
+            public void UpdataEditerRoomListInfo(List<LAClient.EditerRoomItem> lList)
+            {
+                foreach (GameObject item in g_lItemList)
+                {
+                    g_lItemQueue.Enqueue(item);
+                }
+                g_lItemList.Clear();
+
+
+                foreach (LAClient.EditerRoomItem item in lList)
+                {
+                    GameObject Entity = null;
+                    if (g_lItemQueue.Count > 0)
+                    {
+                        Entity = g_lItemQueue.Dequeue();
+                        Entity.SetActive(true);
+                        g_lItemList.Add(Entity);
+
+                        Entity.transform.Find("Show/Text").GetComponent<Text>().text = item.name;
+                        Entity.transform.Find("Show/Text").GetComponent<Button>().onClick.RemoveAllListeners();
+                        Entity.transform.Find("Show/Text").GetComponent<Button>().onClick.AddListener(delegate() {
+                            CheckItem(Entity);
+                            OnClickEditerRoomBtn(item);
+                        });
+                    }
+                    else
+                    {
+                        Entity = GameObject.Instantiate(g_pPrefab);
+                        Entity.transform.SetParent(g_pPrefab.transform.parent, false);
+                        Entity.SetActive(true);
+                        g_lItemList.Add(Entity);
+
+                        Entity.transform.Find("Show/Text").GetComponent<Text>().text = item.name;
+                        Entity.transform.Find("Show/Text").GetComponent<Button>().onClick.RemoveAllListeners();
+                        Entity.transform.Find("Show/Text").GetComponent<Button>().onClick.AddListener(delegate () {
+                            CheckItem(Entity);
+                            OnClickEditerRoomBtn(item);
+                        });
+                    }
+                }
+                if(g_lItemQueue.Count > 0)
+                {
+                    GameObject Item = g_lItemQueue.Dequeue();
+                    Item.SetActive(false);
+                    g_lItemList.Add(Item);
+                }
+
+                if(g_lItemList.Count>0)
+                CheckItem(g_lItemList[0]);
+            }
+
+            /// <summary>
+            /// 单击房间项目。
+            /// </summary>
+            /// <param name="nIndex"></param>
+            public void OnClickEditerRoomBtn(LAClient.EditerRoomItem pItem)
+            {
+              
+                OnClickEditerRoomBtnAction(pItem);
+
+                if (pItem.Image != null)
+                    SetMapImage(pItem.Image);
+            }
+
+            public void CheckItem(GameObject pObject)
+            {
+                foreach (GameObject item in g_lItemList)
+                {
+                    if (pObject == item)
+                    {
+                        item.transform.Find("Show/Image").gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        item.transform.Find("Show/Image").gameObject.SetActive(false);
+                    }
+                }
+              
+            }
+
+            /// <summary>
+            /// 单击返回项目。
+            /// </summary>
+            /// <param name="nIndex"></param>
+            public void OnClickReturnBtn(int nIndex)
+            {
+                OnClickReturnBtnAction(nIndex);
+            }
+
+            /// <summary>
+            /// 单击功能菜单项目。
+            /// </summary>
+            /// <param name="nIndex"></param>
+            public void OnClickMenuBtn(int nIndex)
+            {
+                OnClickMenuBtnAction(nIndex);
+            }
+
+            public void SetMapImage(Texture2D pTex)
+            {
+                m_pMapImg.sprite = Sprite.Create(pTex,new Rect(0,0, pTex.width, pTex.height),new Vector2(0.5f,0.5f));
+            }
+
+            /// <summary>
+            /// 单击返回。
+            /// </summary>
+            public Action<int> OnClickReturnBtnAction;
+
+            /// <summary>
+            /// 单击功能菜单按钮。
+            /// </summary>
+            public Action<int> OnClickMenuBtnAction;
+
+            /// <summary>
+            /// 单击房间项目按钮。
+            /// </summary>
+            public Action<LAClient.EditerRoomItem> OnClickEditerRoomBtnAction;
+
+            private static Queue<GameObject> g_lItemQueue = new Queue<GameObject>();
+            public static List<GameObject> g_lItemList = new List<GameObject>();
+
+            public Tween tween;
+
+            private Image m_pMapImg;
+            private Text m_pTitle;
+            private Text m_pReturn;
+            private Text m_pOpen;
+            private Text m_pCreate;
+            private Text m_pEditer;
+            private Text m_pDelete;
+            private static GameObject g_pPrefab;
+
+            public GameObject m_pRoot;
+
+        }
+
 
     }
 }

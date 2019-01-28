@@ -83,7 +83,12 @@ public static class MapData
 
     static List<int[,]> maps;
 
-    static string url = @"Assets/Resources/Map.map";
+    #if UNITY_EDITOR
+        static string url = @"Assets/StreamingAssets/Map.map";
+#elif UNITY_ANDROID
+        static string url = "jar:file:///" + Application.streamingAssetsPath + @"//Map.map";
+#endif
+
     /*
     private static int[,] level_1 =
     {
@@ -112,7 +117,8 @@ public static class MapData
 
     static MapData()
     {
-        mapReader = new MapReader(url);
+        //Res.Debug_Text.text += "开始加载！";
+        mapReader = new MapReader(Res.MapText);
 
         MapID2Data = new Dictionary<int, int[,]>()
         {
