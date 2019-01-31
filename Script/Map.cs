@@ -36,9 +36,14 @@ public class Map
     /// <summary>
     /// 敌人攻击方向。
     /// </summary>
-    public Vector2[] direction;
+    public List<List<Vector2>> direction;
 
-    public Map(int id, MapLevel mapLevel, int bestScore, Texture2D mipmap, bool isLock, Vector2[] direction)
+    /// <summary>
+    /// 敌人出生点组。
+    /// </summary>
+    public List<List<Vector2>> group;
+
+    public Map(int id, MapLevel mapLevel, int bestScore, Texture2D mipmap, bool isLock, List<List<Vector2>> direction, List<List<Vector2>> group)
     {
         this.id = id;
         this.mapLevel = mapLevel;
@@ -46,6 +51,7 @@ public class Map
         this.mipmap = mipmap;
         this.isLock = isLock;
         this.direction = direction;
+        this.group = group;
     }
 
     /// <summary>
@@ -62,9 +68,18 @@ public class Map
     /// 获取敌人攻击方向。
     /// </summary>
     /// <returns></returns>
-    public Vector2[] GetDirection()
+    public List<List<Vector2>> GetDirection()
     {
         return direction;
+    }
+
+    /// <summary>
+    /// 获取敌人出生位置组。
+    /// </summary>
+    /// <returns></returns>
+    public List<List<Vector2>> GetGroup()
+    {
+        return group;
     }
 }
 
@@ -120,20 +135,13 @@ public static class MapData
         //Res.Debug_Text.text += "开始加载！";
         mapReader = new MapReader(Res.MapText);
 
-        MapID2Data = new Dictionary<int, int[,]>()
-        {
-            {1, mapReader.GetMap(1) },
-            {2, mapReader.GetMap(2) },
-            {3, mapReader.GetMap(3) },
-            {4, mapReader.GetMap(4) }
-        };
+        MapID2Data = new Dictionary<int, int[,]>();
+        Maps = new List<Map>();
 
-        Maps = new List<Map>()
+        for(int i = 0; i < mapReader.GetCount(); i++)
         {
-            new Map(1,MapLevel.Easy,1,null,false,mapReader.GetDirection(1)),
-            new Map(2,MapLevel.Hell,1,null,true,mapReader.GetDirection(2)),
-            new Map(3,MapLevel.Easy,1,null,true,mapReader.GetDirection(3)),
-            new Map(4,MapLevel.Easy,1,null,true,mapReader.GetDirection(4))
-        };
+            MapID2Data.Add(i + 1, mapReader.GetMap(i + 1));
+            Maps.Add(new Map(i + 1, MapLevel.Easy, 0, null, false, mapReader.GetDirection(i + 1), mapReader.GetGroup(i + 1)));
+        }
     }
 }

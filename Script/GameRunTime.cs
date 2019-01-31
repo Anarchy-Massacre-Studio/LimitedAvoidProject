@@ -4,6 +4,7 @@ using UnityEngine;
 using SyzygyStudio;
 public class GameRunTime : MonoBehaviour
 {
+    public int L;
     /// <summary>
     /// 当前地图。
     /// </summary>
@@ -14,12 +15,6 @@ public class GameRunTime : MonoBehaviour
     /// </summary>
     public static int Score { get; private set; }
 
-
-    /// <summary>
-    /// 敌人出生地坐标列表。
-    /// </summary>
-    private List<Vector2> birthPoints = new List<Vector2>();
-
     /// <summary>
     /// 设置当前地图。
     /// </summary>
@@ -28,12 +23,13 @@ public class GameRunTime : MonoBehaviour
     {
         _map = map;
     }
-    
+
     private void OnEnable()
     {
         if (ResourcesManager.isLoadFinish)
         {
-            _map = MapData.Maps[1];
+            Res.PlayerT.SetActive(true);
+            _map = MapData.Maps[L];
             if (_map != null)
             {
                 for (int i = 0; i < _map.GetMap().GetLength(1); i++)
@@ -51,7 +47,6 @@ public class GameRunTime : MonoBehaviour
                             case 2:
                                 Transform t = Res.BirthPoints.Take();
                                 t.position = new Vector3(i + 1, j + 1, 0);
-                                birthPoints.Add(t.localPosition);
                                 break;
                         }
                     }
@@ -76,9 +71,9 @@ public class GameRunTime : MonoBehaviour
 
     private void OnDisable()
     {
+        Res.PlayerT.SetActive(false);
         transform.position = new Vector3(0, 0);
         transform.localScale = Vector3.one;
-        birthPoints.Clear();
         Res.Grounds.BackAll();
         Res.BirthPoints.BackAll();
         Res.Enemys.BackAll();
@@ -110,15 +105,13 @@ public class GameRunTime : MonoBehaviour
     /// </summary>
     private void genEnemys()
     {
-        for(int i = 0; i < birthPoints.Count; i++)
+        for (int i = 0; i < _map.GetGroup().Count; i++)
         {
+            int r = Random.Range(0, _map.GetGroup()[i].Count);
+
             var e = Res.Enemys.Take();
-            e.localPosition = birthPoints[i];
-            e.GetComponent<Enemy>().SetAttackDirection(_map.GetDirection()[i]);
+            e.localPosition = _map.GetGroup()[i][r];
+            e.GetComponent<Enemy>().SetAttackDirection(_map.GetDirection()[i][r]);
         }
-        //foreach(var b in birthPoints)
-        //{
-        //    Res.Enemys.Take().localPosition = b;
-        //}
     }
 }

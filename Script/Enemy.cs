@@ -18,7 +18,8 @@ public struct AttackDirection
 public class Enemy : MonoBehaviour
 {
     Transform player;
-    ParticleSystem particleSystem;
+
+    private new ParticleSystem particleSystem;
 
     [SerializeField]
     Vector2 attackDirection;
@@ -57,6 +58,7 @@ public class Enemy : MonoBehaviour
     void KILL()
     {
         Debug.Log("KILL");
+        Res.PlayerT.gameObject.SetActive(false);
         Res.Dies.SetPosition(player.position);
         Res.Dies.Take();
     }

@@ -8,7 +8,9 @@ using System.IO;
 
 public class ResourcesManager : MonoBehaviour
 {
+    public LAManage LAManage;
     public Transform Map;
+    public Transform Pack;
     public Text View_Loading;
     public RectTransform SwitchShow;
     public static bool isLoadFinish = false;
@@ -57,7 +59,8 @@ public class ResourcesManager : MonoBehaviour
         #endregion
         ///* 
         #region 生成素材。
-        yield return Instantiate(Res.Player);
+        yield return Res.PlayerT = Instantiate(Res.Player);
+        Res.PlayerT.transform.SetParent(Pack);
         #endregion
 
         #region 实例化组。
@@ -75,6 +78,7 @@ public class ResourcesManager : MonoBehaviour
                 t.gameObject.SetActive(false);
             }
         });
+        d.transform.SetParent(Pack);
 
         #endregion
 
@@ -121,8 +125,9 @@ public class ResourcesManager : MonoBehaviour
         #endregion
 
         #endregion
+        LAManage.enabled = true;
         //*/
-        //yield return new WaitForSecondsRealtime(1f);
+        yield return new WaitForSecondsRealtime(1f);
 
         isLoadFinish = true;
 
@@ -142,6 +147,8 @@ public static class Res
     public static Group<Transform> Dies = null;
     public static Group<Transform> Grounds = null;
     public static Group<Transform> BirthPoints = null;
+
+    public static GameObject PlayerT = null;
 
     public static List<GameObject> Maps = null;
 

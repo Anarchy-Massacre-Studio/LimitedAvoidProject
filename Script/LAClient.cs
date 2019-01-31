@@ -1141,7 +1141,7 @@ namespace LA.UI
         /// <param name="transform">指定组件。</param>
         /// <param name="tList">需要返回的List类（不能为null）</param>
         /// <typeparam name="T">需要返回的T类型。</typeparam>
-        public static void FindCom<T>(Transform transform, ref List<T> tList) where T : MonoBehaviour
+        public static void FindCom<T>(Transform transform, ref List<T> tList) where T : Component
         {
             foreach (Transform t in transform)
             {

@@ -11,7 +11,7 @@ using System;
 
 public class LAManage : MonoBehaviour
 {
-    public ResourcesManager ResourcesManager;
+    //public ResourcesManager ResourcesManager;
 
 	void Start () 
     {   
@@ -38,8 +38,9 @@ public class LAManage : MonoBehaviour
         
         Camera.backgroundColor = colorGen.original;
 
-        TextTools.FindCom<Text>(Canvas.transform, ref tList);
-        TextTools.FindCom<Image>(Content, ref iList);
+        TextTools.FindCom(Canvas.transform, ref tList);
+        TextTools.FindCom(Content, ref iList);
+        TextTools.FindCom(MapNode, ref sList);
 
         foreach (var item in tList)
 		{
@@ -49,6 +50,10 @@ public class LAManage : MonoBehaviour
 		{
 			item.color = new Color(colorGen.dark_1.r, colorGen.dark_1.g, colorGen.dark_1.b ,item.color.a);
 		}
+        foreach (var item in sList)
+        {
+            item.color = new Color(colorGen.dark_2.r, colorGen.dark_2.g, colorGen.dark_2.b, item.color.a);
+        }
 
         // 初始化。
         m_pLAClient.Init();
@@ -60,23 +65,17 @@ public class LAManage : MonoBehaviour
         LAClient.g_Ins.InitInfo(Canvas);
         m_pUpdate = LAClient.g_Ins.m_pUpdate;
         //MapData.isStart = false;  //触发MapData类的静态构造函数。
-
-
     }
 
     private void Update()
     {
         //if (MapData.isStart == true)
         //{
-            ResourcesManager.enabled = true;
+        //ResourcesManager.enabled = true;
 
-            if (m_pUpdate != null)
-            {
-                m_pUpdate();
-            }
+        m_pUpdate?.Invoke();
 
-
-            if (Input.GetKeyDown(KeyCode.Q))
+        if (Input.GetKeyDown(KeyCode.Q))
             {
                 LAClient.g_Ins.UpdataMapData();
             }
@@ -97,6 +96,11 @@ public class LAManage : MonoBehaviour
     /// 选择关卡节点。
     /// </summary>
     public Transform Content;
+
+    /// <summary>
+    /// 地图容器根节点。
+    /// </summary>
+    public Transform MapNode;
 
     /// <summary>
     /// 摄像机。
@@ -130,6 +134,10 @@ public class LAManage : MonoBehaviour
     /// <typeparam name="Image"></typeparam>
     /// <returns></returns>
     private List<Image> iList = new List<Image>();
+    /// <summary>
+    /// SpriteRenderer组件List。
+    /// </summary>
+    private List<SpriteRenderer> sList = new List<SpriteRenderer>();
 
     /// <summary>
     /// 颜色映射表。

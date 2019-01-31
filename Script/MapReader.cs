@@ -8,7 +8,7 @@
 
     public class MapReader
     {
-        enum Mark { count,name,size,map,direction,def};
+        enum Mark { count,name,size,map,direction,group,def};
 
         /// <summary>
         /// 地图数量。
@@ -33,7 +33,12 @@
         /// <summary>
         /// 敌人出生点方向。
         /// </summary>
-        List<Vector2[]> directions = null;
+        List<List<List<Vector2>>> directions = null;
+
+        /// <summary>
+        /// 敌人出生点组。
+        /// </summary>
+        List<List<List<Vector2>>> groups = null;
 
         int[] birthPointCount;
         int[] groundCount;
@@ -49,7 +54,8 @@
             Debug.LogError("加载地图。");
             //Res.Debug_Text.text += "加载地图！";
             if (maps == null) maps = new List<int[,]>();
-            if (directions == null) directions = new List<Vector2[]>();
+            if (directions == null) directions = new List<List<List<Vector2>>>();
+            if (groups == null) groups = new List<List<List<Vector2>>>();
             try
             {
                 //Res.Debug_Text.text += "try!";
@@ -85,6 +91,10 @@
 
                         case "Direction":
                             mark = Mark.direction;
+                            break;
+
+                        case "Group":
+                            mark = Mark.group;
                             break;
 
                         case "": break;
@@ -141,53 +151,28 @@
                                         temp_map[j / size[i].y, j % size[i].y] = just_num_int[j];
                                     }
 
-                                    int[,] temp_map_flip = temp_map;
-                                    /*
-                                    for (int k = 0; k < temp_map.GetLength(0); k++)
+                                    int[,] temp_map_flip = new int[size[i].x, size[i].y];
+
+                                    int n = size[i].x; //行
+                                    int m = size[i].y; //列
+
+                                    for (int k = 0; k < n; k++)
                                     {
-                                        for (int l = 0; l < temp_map.GetLength(1); l++)
+                                        for(int l = 0; l < m; l++)
                                         {
-                                            temp_map_flip[k, l] = temp_map[temp_map.GetLength(0) - k - 1, l];
+                                            temp_map_flip[k, l] = temp_map[n - 1 - k, l];
                                         }
                                     }
-                                    */
-                                    /*
-                                    List<int[]> vs = new List<int[]>(temp_map.GetLength(0));
-
-                                    for (int j = 0; j < just_num_int.Length; j++)
-                                    {
-                                        vs[j / map_y][j % map_y] = just_num_int[j];
-                                        //temp_map[j / map_y, j % map_y] = just_num_int[j];
-                                    }
-                                    */
                                     maps.Add(temp_map_flip);
                                     break;
 
                                 case Mark.direction:
-                                    string[] just_num_2 = s_not_space.Replace('(', ' ').Replace(')', ' ').Trim().Split(',');
-                                    if (just_num_2.Length % 2 != 0) throw new Exception("Map Direction read errors!");
+                                    analysis(s_not_space, directions);
 
-                                    Vector2 temp_v2 = new Vector2();
-                                    Vector2[] temp_v2s = new Vector2[just_num_2.Length / 2];
-                                    bool isFull = false;
-                                    int index = 0;
-                                    foreach (var f in just_num_2)
-                                    {
-                                        if (!isFull)
-                                        {
-                                            temp_v2.x = Convert.ToSingle(f);
-                                            isFull = true;
-                                        }
-                                        else
-                                        {
-                                            temp_v2.y = Convert.ToSingle(f);
-                                            temp_v2s[index] = temp_v2;
-                                            index++;
-                                            isFull = false;
-                                        }
-                                    }
+                                    break;
 
-                                    directions.Add(temp_v2s);
+                                case Mark.group:
+                                    analysis(s_not_space, groups);
 
                                     i++;
                                     break;
@@ -203,7 +188,7 @@
                 memoryStream.Dispose();
                 //Res.Debug_Text.text += "加载完成！";
             }
-            catch (DirectoryNotFoundException dnfe)
+            catch (DirectoryNotFoundException)
             {
                 Debug.LogError("MapNotExist");
                 //Res.Debug_Text.text += dnfe.Message;
@@ -246,9 +231,19 @@
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public Vector2[] GetDirection(int id)
+        public List<List<Vector2>> GetDirection(int id)
         {
             return directions[id - 1];
+        }
+
+        /// <summary>
+        /// 根据id得到指定地图的敌人出生位置。
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public List<List<Vector2>> GetGroup(int id)
+        {
+            return groups[id - 1];
         }
 
         /// <summary>
@@ -258,6 +253,48 @@
         public int GetCount()
         {
             return count;
+        }
+
+        private void analysis(string s_not_space, List<List<List<Vector2>>> output)
+        {
+            string[] split_middle_brackets = s_not_space.Trim().Replace(" ", "").Split(']');
+
+            var split_middle_brackets_arr = new List<string>();
+            foreach (string smb in split_middle_brackets)
+            {
+                split_middle_brackets_arr.Add(smb);
+            }
+            split_middle_brackets_arr.Remove("");
+
+            var sub_group = new List<List<Vector2>>();
+
+            foreach (string smba in split_middle_brackets_arr)
+            {
+                var smb_1 = smba.Replace('(', ' ').Replace(')', ' ').Replace('[', ' ').Trim().Replace(" ", "");
+                var smb_2 = smb_1.Split(',');
+
+                var list_v2 = new List<Vector2>();
+                var isFull_2 = false;
+                Vector2 smb_v2 = new Vector2();
+                foreach (var smb_2_2 in smb_2)
+                {
+                    var smb_2_2_2 = smb_2_2.Trim();
+
+                    if (!isFull_2)
+                    {
+                        smb_v2.x = Convert.ToSingle(smb_2_2_2);
+                        isFull_2 = true;
+                    }
+                    else
+                    {
+                        smb_v2.y = Convert.ToSingle(smb_2_2_2);
+                        list_v2.Add(smb_v2);
+                        isFull_2 = false;
+                    }
+                }
+                sub_group.Add(list_v2);
+            }
+            output.Add(sub_group);
         }
     }
 }
